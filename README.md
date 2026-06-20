@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./public/favicon.png" alt="Maniesta Campus OS Logo" width="120" />
+  <img src="./frontend/public/favicon.png" alt="Maniesta Campus OS Logo" width="120" />
 </p>
 
 # Maniesta Campus OS
