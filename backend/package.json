@@ -1,0 +1,19 @@
+{
+  "name": "maniesta-campus-seed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Firestore seed scripts for Maniesta Campus OS — no live server required",
+  "scripts": {
+    "seed": "node scripts/seedFirestore.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "firebase-admin": "^12.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "author": "Maniesta Campus Team",
+  "license": "ISC"
+}
