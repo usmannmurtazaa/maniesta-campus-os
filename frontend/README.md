@@ -199,7 +199,7 @@ ISC – Maniesta Campus Team
 ## 👤 Author
 
 <div align="center">
-  <img src="https://avatars.githubusercontent.com/u/your-github-username?v=4" width="80" style="border-radius:50%"/>
+  <img src="https://avatars.githubusercontent.com/u/usmannmurtazaa?v=4" width="80" style="border-radius:50%"/>
   <h3 style="margin:0.5rem 0 0">Usman Murtaza</h3>
   <p style="margin:0; color:#6b7280">Full‑Stack Developer & SaaS Architect</p>
   <a href="https://usmanmurtaza.netlify.app" target="_blank" rel="noopener noreferrer">
