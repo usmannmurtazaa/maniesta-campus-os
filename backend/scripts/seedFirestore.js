@@ -7,7 +7,7 @@ const admin = require('firebase-admin');
 const SERVICE_ACCOUNT_PATH =
   process.env.FIREBASE_SERVICE_ACCOUNT_PATH || './serviceAccountKey.json';
 const ORG_ID = process.env.ORG_ID || 'demo-org';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'usmanmurtaza2004@gmail.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'usmanmurtazaportfolio@gmail.com';
 const ADMIN_UID = process.env.ADMIN_UID || '';
 
 // ------------------------------------------------------------------
@@ -52,6 +52,8 @@ async function seed() {
   if (orgSnap.exists) {
     console.log('⚠ Organisation already exists, skipping creation.');
   } else {
+    // NOTE: studentCount and courseCount below are static demo values,
+    // not auto-updated when students or courses are added later.
     await ref('organizations', ORG_ID).set({
       name: 'Demo Institute',
       plan: 'free',
@@ -143,7 +145,6 @@ async function seed() {
       dateOfBirth: '2005-03-15',
       gender: 'Male',
       courseId: course1Id,
-      enrollmentDate: admin.firestore.FieldValue.serverTimestamp(),
       status: 'Active',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -157,7 +158,6 @@ async function seed() {
       dateOfBirth: '2005-07-20',
       gender: 'Female',
       courseId: course1Id,
-      enrollmentDate: admin.firestore.FieldValue.serverTimestamp(),
       status: 'Active',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -171,7 +171,6 @@ async function seed() {
       dateOfBirth: '2005-11-02',
       gender: 'Male',
       courseId: course2Id,
-      enrollmentDate: admin.firestore.FieldValue.serverTimestamp(),
       status: 'Active',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
@@ -191,7 +190,9 @@ async function seed() {
     batch.set(ref('attendance', att1Id), {
       orgId: ORG_ID,
       courseId: course1Id,
+      courseName: 'Introduction to Computing',
       studentId: student1Id,
+      studentName: 'Ali Khan',
       date: today,
       status: 'present',
       recordedBy: ADMIN_UID || '',
@@ -200,7 +201,9 @@ async function seed() {
     batch.set(ref('attendance', att2Id), {
       orgId: ORG_ID,
       courseId: course1Id,
+      courseName: 'Introduction to Computing',
       studentId: student2Id,
+      studentName: 'Sana Ahmed',
       date: today,
       status: 'absent',
       recordedBy: ADMIN_UID || '',
@@ -222,7 +225,9 @@ async function seed() {
     await ref('marks', mark1Id).set({
       orgId: ORG_ID,
       studentId: student1Id,
+      studentName: 'Ali Khan',
       courseId: course1Id,
+      courseName: 'Introduction to Computing',
       subject: 'Programming',
       examType: 'Mid-term',
       obtainedMarks: 85,
@@ -235,7 +240,9 @@ async function seed() {
     await ref('marks', mark2Id).set({
       orgId: ORG_ID,
       studentId: student2Id,
+      studentName: 'Sana Ahmed',
       courseId: course1Id,
+      courseName: 'Introduction to Computing',
       subject: 'Programming',
       examType: 'Mid-term',
       obtainedMarks: 72,
@@ -248,7 +255,9 @@ async function seed() {
     await ref('marks', mark3Id).set({
       orgId: ORG_ID,
       studentId: student3Id,
+      studentName: 'Bilal Zafar',
       courseId: course2Id,
+      courseName: 'Physics II',
       subject: 'Electromagnetism',
       examType: 'Final',
       obtainedMarks: 58,

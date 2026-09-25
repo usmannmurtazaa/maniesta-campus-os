@@ -1,0 +1,153 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------
+    // Helper: fetch the authenticated user's profile
+    // ------------------------------------------------------------------
+    function getUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function userOrg() { return getUserDoc().orgId; }
+    function userRole() { return getUserDoc().role; }
+
+    function isAuth() { return request.auth != null; }
+    function isAdmin() { return userRole() == 'admin'; }
+    function isTeacher() { return userRole() == 'teacher'; }
+    function belongsToOrg(orgId) { return userOrg() == orgId; }
+
+    // ------------------------------------------------------------------
+    // Organisations
+    // ------------------------------------------------------------------
+    match /organizations/{orgId} {
+      allow read: if isAuth() && belongsToOrg(orgId);
+      allow create: if isAuth();
+      allow update: if isAuth() && belongsToOrg(orgId) && isAdmin();
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Users
+    // ------------------------------------------------------------------
+    match /users/{uid} {
+      allow read: if isAuth() && request.auth.uid == uid;
+      allow read: if isAuth() && belongsToOrg(resource.data.orgId);
+      allow create: if isAuth()
+                    && request.auth.uid == uid
+                    && request.resource.data.role == 'admin';
+      allow create: if isAuth()
+                    && isAdmin()
+                    && request.resource.data.orgId == userOrg();
+      allow update: if isAuth()
+                    && request.auth.uid == uid
+                    && request.resource.data.orgId == resource.data.orgId
+                    && request.resource.data.role == resource.data.role
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['displayName', 'avatarURL', 'updatedAt']);
+      allow update: if isAdmin()
+                    && belongsToOrg(resource.data.orgId)
+                    && request.resource.data.orgId == resource.data.orgId;
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Students
+    // ------------------------------------------------------------------
+    match /students/{docId} {
+      allow read: if isAuth() && belongsToOrg(resource.data.orgId);
+      allow create: if isAuth() && belongsToOrg(request.resource.data.orgId)
+                    && (isAdmin() || isTeacher());
+      allow update: if isAuth() && belongsToOrg(resource.data.orgId)
+                    && (isAdmin() || isTeacher());
+      allow delete: if isAuth() && belongsToOrg(resource.data.orgId)
+                    && isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // Courses
+    // ------------------------------------------------------------------
+    match /courses/{docId} {
+      allow read: if isAuth() && belongsToOrg(resource.data.orgId);
+      allow create: if isAuth() && belongsToOrg(request.resource.data.orgId)
+                    && isAdmin();
+      allow update: if isAuth() && belongsToOrg(resource.data.orgId)
+                    && isAdmin();
+      allow delete: if isAuth() && belongsToOrg(resource.data.orgId)
+                    && isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // Attendance
+    // ------------------------------------------------------------------
+    match /attendance/{docId} {
+      allow read: if isAuth() && belongsToOrg(resource.data.orgId);
+      allow create: if isAuth() && belongsToOrg(request.resource.data.orgId)
+                    && (isAdmin() || isTeacher());
+      allow update: if isAuth() && belongsToOrg(resource.data.orgId)
+                    && (isAdmin() || isTeacher());
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Marks
+    // ------------------------------------------------------------------
+    match /marks/{docId} {
+      allow read: if isAuth() && belongsToOrg(resource.data.orgId);
+      allow create: if isAuth() && belongsToOrg(request.resource.data.orgId)
+                    && (isAdmin() || isTeacher());
+      allow update: if isAuth() && belongsToOrg(resource.data.orgId)
+                    && (isAdmin() || isTeacher());
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Notifications
+    // ------------------------------------------------------------------
+    match /notifications/{docId} {
+      allow read: if isAuth() && belongsToOrg(resource.data.orgId)
+                  && resource.data.recipientUserId == request.auth.uid;
+      allow create: if isAuth() && belongsToOrg(request.resource.data.orgId)
+                    && (isAdmin() || isTeacher());
+      allow update: if isAuth() && resource.data.recipientUserId == request.auth.uid
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Audit Logs
+    // ------------------------------------------------------------------
+    match /auditLogs/{docId} {
+      allow read: if isAuth() && belongsToOrg(resource.data.orgId) && isAdmin();
+      allow create: if isAuth() && belongsToOrg(request.resource.data.orgId);
+      allow update, delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Contact Messages
+    // ------------------------------------------------------------------
+    match /contactMessages/{docId} {
+      allow create: if true;
+      allow read: if isAuth() && isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // 🆕 Maniesta Suite Exports (no auth required)
+    // ------------------------------------------------------------------
+    match /exports/{docId} {
+      // Allow unauthenticated writes with validation
+      allow create: if request.resource.data.keys().hasAll(['studentName', 'exportType', 'timestamp'])
+                    && request.resource.data.size() < 5000
+                    && request.time > timestamp.date(2024, 1, 1);
+      allow read: if true; // Optional – public read for analytics
+      allow update, delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Default deny
+    // ------------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
