@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -16,8 +16,33 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 // ------------------------------------------------------------------
-// Helper: fetch Firestore profile – retries once if “unavailable”
+// Helpers
 // ------------------------------------------------------------------
+
+/**
+ * Build a fallback user object from a Firebase auth user.
+ * Used when the Firestore profile cannot be fetched (offline, missing
+ * document, permission error). Guarantees a consistent user shape
+ * across the app.
+ */
+function buildFallbackUser(firebaseUser) {
+  if (!firebaseUser) return null;
+  return {
+    uid: firebaseUser.uid,
+    email: firebaseUser.email,
+    displayName: firebaseUser.displayName || '',
+    photoURL: firebaseUser.photoURL || '',
+    orgId: null,
+    role: null,
+  };
+}
+
+/**
+ * Fetch the Firestore user profile, retrying once on transient
+ * `unavailable` errors (which Firebase throws when the client is
+ * reconnecting). Falls back to `null` if the profile cannot be
+ * retrieved after retries.
+ */
 async function fetchUserProfile(firebaseUser, retries = 2) {
   if (!firebaseUser) return null;
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -34,18 +59,11 @@ async function fetchUserProfile(firebaseUser, retries = 2) {
           role: p.role || null,
         };
       }
-      return {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName || '',
-        photoURL: firebaseUser.photoURL || '',
-        orgId: null,
-        role: null,
-      };
+      return buildFallbackUser(firebaseUser);
     } catch (error) {
-      // Only retry on genuine network errors
+      // Only retry on genuine network errors.
       if (error.code === 'unavailable' && attempt < retries - 1) {
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 1000));
         continue;
       }
       console.warn('Could not fetch Firestore profile:', error.code);
@@ -53,6 +71,29 @@ async function fetchUserProfile(firebaseUser, retries = 2) {
     }
   }
   return null;
+}
+
+/**
+ * Map a Firebase Auth error code to a user-friendly message.
+ * Pure function — safe to call from anywhere.
+ */
+function translateError(code) {
+  switch (code) {
+    case 'auth/user-not-found':
+      return 'No account found with this email.';
+    case 'auth/wrong-password':
+      return 'Invalid password.';
+    case 'auth/invalid-email':
+      return 'Invalid email address.';
+    case 'auth/email-already-in-use':
+      return 'An account with this email already exists.';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters.';
+    case 'auth/popup-closed-by-user':
+      return 'Sign-in window closed.';
+    default:
+      return 'An unexpected error occurred.';
+  }
 }
 
 // ------------------------------------------------------------------
@@ -63,25 +104,13 @@ export const AuthProvider = ({ children }) => {
   const [authUser, setAuthUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Auth listener
+  // Auth listener — fires on sign-in, sign-out, and on first load.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async fbUser => {
       if (fbUser) {
         setAuthUser(fbUser);
         const profile = await fetchUserProfile(fbUser);
-        if (profile) {
-          setUser(profile);
-        } else {
-          // Fallback – use raw auth user
-          setUser({
-            uid: fbUser.uid,
-            email: fbUser.email,
-            displayName: fbUser.displayName || '',
-            photoURL: fbUser.photoURL || '',
-            orgId: null,
-            role: null,
-          });
-        }
+        setUser(profile || buildFallbackUser(fbUser));
       } else {
         setAuthUser(null);
         setUser(null);
@@ -93,9 +122,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth, email, password);
       toast.success('Logged in successfully!');
-      // Let the auth listener fetch the profile
+      // The auth listener will fetch and set the full profile.
       return { success: true, user: auth.currentUser };
     } catch (error) {
       const msg = translateError(error.code);
@@ -110,28 +139,14 @@ export const AuthProvider = ({ children }) => {
       const result = await signInWithPopup(auth, provider);
       toast.success('Signed in with Google!');
 
-      // Small delay for Firestore reconnection
-      await new Promise((r) => setTimeout(r, 1200));
+      // Small delay to let Firestore reconnect before fetching the profile.
+      await new Promise(r => setTimeout(r, 1200));
 
       const profile = await fetchUserProfile(result.user);
-      if (profile) {
-        setUser(profile);
-        setAuthUser(result.user);
-        return { success: true, user: profile };
-      }
-
-      // Fallback
-      const basicUser = {
-        uid: result.user.uid,
-        email: result.user.email,
-        displayName: result.user.displayName || '',
-        photoURL: result.user.photoURL || '',
-        orgId: null,
-        role: null,
-      };
-      setUser(basicUser);
+      const finalUser = profile || buildFallbackUser(result.user);
+      setUser(finalUser);
       setAuthUser(result.user);
-      return { success: true, user: basicUser };
+      return { success: true, user: finalUser };
     } catch (error) {
       const msg = translateError(error.code);
       toast.error(msg);
@@ -165,18 +180,6 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', err);
     }
   }, []);
-
-  function translateError(code) {
-    switch (code) {
-      case 'auth/user-not-found': return 'No account found with this email.';
-      case 'auth/wrong-password': return 'Invalid password.';
-      case 'auth/invalid-email': return 'Invalid email address.';
-      case 'auth/email-already-in-use': return 'An account with this email already exists.';
-      case 'auth/weak-password': return 'Password should be at least 6 characters.';
-      case 'auth/popup-closed-by-user': return 'Sign‑in window closed.';
-      default: return 'An unexpected error occurred.';
-    }
-  }
 
   const value = {
     user,

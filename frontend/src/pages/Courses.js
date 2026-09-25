@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   collection,
   query,
@@ -18,16 +18,12 @@ import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ----------------------------------------------------------------------
-// Service functions (unchanged)
+// Service functions
 // ----------------------------------------------------------------------
 async function fetchCourses(orgId) {
-  const q = query(
-    collection(db, 'courses'),
-    where('orgId', '==', orgId),
-    orderBy('code', 'asc')
-  );
+  const q = query(collection(db, 'courses'), where('orgId', '==', orgId), orderBy('code', 'asc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 async function addCourse(orgId, data) {
@@ -48,7 +44,7 @@ async function removeCourse(id) {
 }
 
 // ----------------------------------------------------------------------
-// Custom hook (unchanged)
+// Custom hook
 // ----------------------------------------------------------------------
 function useCourses(orgId) {
   const [courses, setCourses] = useState([]);
@@ -75,7 +71,7 @@ function useCourses(orgId) {
     load();
   }, [load]);
 
-  const add = async (data) => {
+  const add = async data => {
     try {
       await addCourse(orgId, data);
       toast.success('Course added');
@@ -90,20 +86,18 @@ function useCourses(orgId) {
     try {
       await updateCourse(id, data);
       toast.success('Course updated');
-      setCourses((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, ...data } : c))
-      );
+      setCourses(prev => prev.map(c => (c.id === id ? { ...c, ...data } : c)));
     } catch (err) {
       toast.error('Failed to update course');
       throw err;
     }
   };
 
-  const remove = async (id) => {
+  const remove = async id => {
     try {
       await removeCourse(id);
       toast.success('Course deleted');
-      setCourses((prev) => prev.filter((c) => c.id !== id));
+      setCourses(prev => prev.filter(c => c.id !== id));
     } catch (err) {
       toast.error('Failed to delete course');
       throw err;
@@ -114,7 +108,7 @@ function useCourses(orgId) {
 }
 
 // ----------------------------------------------------------------------
-// Component (UI upgraded)
+// Component
 // ----------------------------------------------------------------------
 const Courses = () => {
   const { user } = useAuth();
@@ -149,11 +143,11 @@ const Courses = () => {
     setFormErrors({});
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = e => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+      setFormErrors(prev => ({ ...prev, [name]: undefined }));
     }
   };
 
@@ -163,18 +157,14 @@ const Courses = () => {
     if (!formData.name.trim()) errors.name = 'Course name is required.';
     if (!formData.instructor.trim()) errors.instructor = 'Instructor is required.';
     if (!formData.duration.trim()) errors.duration = 'Duration is required.';
-    if (
-      formData.fees === '' ||
-      isNaN(parseFloat(formData.fees)) ||
-      parseFloat(formData.fees) < 0
-    ) {
+    if (formData.fees === '' || isNaN(parseFloat(formData.fees)) || parseFloat(formData.fees) < 0) {
       errors.fees = 'Enter a valid fee amount (0 or more).';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!orgId) return;
     if (!validateForm()) return;
@@ -205,7 +195,7 @@ const Courses = () => {
     }
   };
 
-  const handleEdit = (course) => {
+  const handleEdit = course => {
     setEditingCourse(course);
     setFormData({
       code: course.code || '',
@@ -220,7 +210,7 @@ const Courses = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async id => {
     if (window.confirm('Are you sure you want to delete this course?')) {
       await remove(id);
     }
@@ -229,7 +219,12 @@ const Courses = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-neutral-200 border-t-primary-600" />
+        <div
+          className="animate-spin rounded-full h-10 w-10 border-2 border-border border-t-primary-600"
+          role="status"
+        >
+          <span className="sr-only">Loading courses…</span>
+        </div>
       </div>
     );
   }
@@ -238,10 +233,12 @@ const Courses = () => {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="w-12 h-12 rounded-full bg-danger-50 flex items-center justify-center mb-4">
-          <FaExclamationTriangle className="text-danger-600 text-xl" />
+          <FaExclamationTriangle className="text-danger-600 text-xl" aria-hidden="true" />
         </div>
-        <p className="text-sm text-neutral-600 mb-4">Failed to load courses.</p>
-        <button onClick={load} className="btn-primary">Retry</button>
+        <p className="text-sm text-content-secondary mb-4">Failed to load courses.</p>
+        <button type="button" onClick={load} className="btn-primary">
+          Retry
+        </button>
       </div>
     );
   }
@@ -251,9 +248,10 @@ const Courses = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h1 className="page-header">Courses</h1>
-          <p className="text-sm text-neutral-500 mt-1">Manage courses for your institute</p>
+          <p className="text-sm text-content-muted mt-1">Manage courses for your institute</p>
         </div>
         <button
+          type="button"
           onClick={() => {
             setEditingCourse(null);
             resetForm();
@@ -261,14 +259,14 @@ const Courses = () => {
           }}
           className="btn-primary inline-flex items-center"
         >
-          <FaPlus className="mr-2" /> Add Course
+          <FaPlus className="mr-2" aria-hidden="true" /> Add Course
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-md border border-neutral-200/60 overflow-hidden">
+      <div className="bg-surface rounded-xl shadow-card border border-border overflow-hidden">
         <div className="table-container">
-          <table className="min-w-full divide-y divide-neutral-100">
+          <table className="min-w-full divide-y divide-border-subtle">
             <thead>
               <tr>
                 <th className="table-header">Course Code</th>
@@ -280,42 +278,49 @@ const Courses = () => {
                 <th className="table-header">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-50">
+            <tbody className="divide-y divide-border-subtle">
               {courses.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-16 text-center">
-                    <FaBook className="mx-auto text-3xl text-neutral-200 mb-3" />
-                    <p className="text-sm text-neutral-500">No courses yet. Add your first course.</p>
+                    <FaBook
+                      className="mx-auto text-3xl text-content-disabled mb-3"
+                      aria-hidden="true"
+                    />
+                    <p className="text-sm text-content-muted">
+                      No courses yet. Add your first course.
+                    </p>
                   </td>
                 </tr>
               ) : (
-                courses.map((course) => (
-                  <tr key={course.id} className="hover:bg-neutral-50/50 transition-colors">
-                    <td className="table-cell font-medium text-neutral-900">{course.code}</td>
+                courses.map(course => (
+                  <tr key={course.id} className="hover:bg-surface-muted/60 transition-colors">
+                    <td className="table-cell font-medium text-content-primary">{course.code}</td>
                     <td className="table-cell">{course.name}</td>
                     <td className="table-cell">{course.instructor}</td>
                     <td className="table-cell">{course.duration}</td>
                     <td className="table-cell">{course.totalStudents}</td>
                     <td className="table-cell">
-                      {course.fees != null
-                        ? `$${Number(course.fees).toLocaleString()}`
-                        : '—'}
+                      {course.fees != null ? `$${Number(course.fees).toLocaleString()}` : '-'}
                     </td>
                     <td className="table-cell">
                       <div className="flex space-x-2">
                         <button
+                          type="button"
                           onClick={() => handleEdit(course)}
-                          className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-50 transition-colors"
+                          className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                           title="Edit course"
+                          aria-label={`Edit ${course.name}`}
                         >
-                          <FaEdit />
+                          <FaEdit aria-hidden="true" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDelete(course.id)}
-                          className="p-1.5 rounded-lg text-danger-600 hover:bg-danger-50 transition-colors"
+                          className="p-1.5 rounded-lg text-danger-600 hover:bg-danger-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-danger-500 focus-visible:ring-offset-2"
                           title="Delete course"
+                          aria-label={`Delete ${course.name}`}
                         >
-                          <FaTrash />
+                          <FaTrash aria-hidden="true" />
                         </button>
                       </div>
                     </td>
@@ -343,16 +348,19 @@ const Courses = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-neutral-100 max-h-[85vh] overflow-y-auto"
+              className="relative w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-border max-h-[85vh] overflow-y-auto"
             >
               <div className="p-6">
-                <h2 className="text-xl font-semibold text-neutral-900 mb-5">
+                <h2 className="text-xl font-semibold text-content-primary mb-5">
                   {editingCourse ? 'Edit Course' : 'Add New Course'}
                 </h2>
                 <form onSubmit={handleSubmit} noValidate>
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="code" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label
+                        htmlFor="code"
+                        className="block text-sm font-medium text-content-primary mb-1.5"
+                      >
                         Course Code
                       </label>
                       <input
@@ -361,7 +369,11 @@ const Courses = () => {
                         name="code"
                         value={formData.code}
                         onChange={handleInputChange}
-                        className={`w-full ${formErrors.code ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                        className={`input ${
+                          formErrors.code
+                            ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                            : ''
+                        }`}
                         required
                         aria-required="true"
                       />
@@ -369,8 +381,12 @@ const Courses = () => {
                         <p className="text-danger-600 text-xs mt-1">{formErrors.code}</p>
                       )}
                     </div>
+
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label
+                        htmlFor="name"
+                        className="block text-sm font-medium text-content-primary mb-1.5"
+                      >
                         Course Name
                       </label>
                       <input
@@ -379,15 +395,23 @@ const Courses = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        className={`w-full ${formErrors.name ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                        className={`input ${
+                          formErrors.name
+                            ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                            : ''
+                        }`}
                         required
                       />
                       {formErrors.name && (
                         <p className="text-danger-600 text-xs mt-1">{formErrors.name}</p>
                       )}
                     </div>
+
                     <div>
-                      <label htmlFor="instructor" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label
+                        htmlFor="instructor"
+                        className="block text-sm font-medium text-content-primary mb-1.5"
+                      >
                         Instructor
                       </label>
                       <input
@@ -396,16 +420,24 @@ const Courses = () => {
                         name="instructor"
                         value={formData.instructor}
                         onChange={handleInputChange}
-                        className={`w-full ${formErrors.instructor ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                        className={`input ${
+                          formErrors.instructor
+                            ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                            : ''
+                        }`}
                         required
                       />
                       {formErrors.instructor && (
                         <p className="text-danger-600 text-xs mt-1">{formErrors.instructor}</p>
                       )}
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="duration" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                        <label
+                          htmlFor="duration"
+                          className="block text-sm font-medium text-content-primary mb-1.5"
+                        >
                           Duration
                         </label>
                         <input
@@ -414,7 +446,11 @@ const Courses = () => {
                           name="duration"
                           value={formData.duration}
                           onChange={handleInputChange}
-                          className={`w-full ${formErrors.duration ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                          className={`input ${
+                            formErrors.duration
+                              ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                              : ''
+                          }`}
                           placeholder="e.g., 4 Years"
                           required
                         />
@@ -422,8 +458,12 @@ const Courses = () => {
                           <p className="text-danger-600 text-xs mt-1">{formErrors.duration}</p>
                         )}
                       </div>
+
                       <div>
-                        <label htmlFor="fees" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                        <label
+                          htmlFor="fees"
+                          className="block text-sm font-medium text-content-primary mb-1.5"
+                        >
                           Fees
                         </label>
                         <input
@@ -432,7 +472,11 @@ const Courses = () => {
                           name="fees"
                           value={formData.fees}
                           onChange={handleInputChange}
-                          className={`w-full ${formErrors.fees ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                          className={`input ${
+                            formErrors.fees
+                              ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                              : ''
+                          }`}
                           min="0"
                           step="0.01"
                           required
@@ -442,8 +486,12 @@ const Courses = () => {
                         )}
                       </div>
                     </div>
+
                     <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label
+                        htmlFor="description"
+                        className="block text-sm font-medium text-content-primary mb-1.5"
+                      >
                         Description
                       </label>
                       <textarea
@@ -451,13 +499,17 @@ const Courses = () => {
                         name="description"
                         value={formData.description}
                         onChange={handleInputChange}
-                        className="w-full"
+                        className="input"
                         rows="3"
                       />
                     </div>
+
                     {editingCourse && (
                       <div>
-                        <label htmlFor="totalStudents" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                        <label
+                          htmlFor="totalStudents"
+                          className="block text-sm font-medium text-content-primary mb-1.5"
+                        >
                           Total Students (manual override)
                         </label>
                         <input
@@ -466,16 +518,17 @@ const Courses = () => {
                           name="totalStudents"
                           value={formData.totalStudents}
                           onChange={handleInputChange}
-                          className="w-full"
+                          className="input"
                           min="0"
                         />
-                        <p className="text-xs text-neutral-500 mt-1">
+                        <p className="text-xs text-content-muted mt-1">
                           Normally updated automatically when students enroll.
                         </p>
                       </div>
                     )}
                   </div>
-                  <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-neutral-100">
+
+                  <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-border-subtle">
                     <button
                       type="button"
                       onClick={() => setShowModal(false)}
@@ -488,7 +541,7 @@ const Courses = () => {
                       disabled={saving}
                       className="btn-primary inline-flex items-center"
                     >
-                      {saving && <FaSpinner className="animate-spin mr-2" />}
+                      {saving && <FaSpinner className="animate-spin mr-2" aria-hidden="true" />}
                       {editingCourse ? 'Update' : 'Add'} Course
                     </button>
                   </div>

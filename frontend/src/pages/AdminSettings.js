@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -15,7 +15,7 @@ const AdminSettings = () => {
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const fetchOrg = async () => {
+  const fetchOrg = useCallback(async () => {
     if (!orgId) {
       setLoading(false);
       return;
@@ -36,13 +36,13 @@ const AdminSettings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
 
   useEffect(() => {
     fetchOrg();
-  }, [orgId]);
+  }, [fetchOrg]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {
@@ -68,7 +68,12 @@ const AdminSettings = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-neutral-200 border-t-primary-600" />
+        <div
+          className="animate-spin rounded-full h-10 w-10 border-2 border-border border-t-primary-600"
+          role="status"
+        >
+          <span className="sr-only">Loading settings…</span>
+        </div>
       </div>
     );
   }
@@ -77,10 +82,10 @@ const AdminSettings = () => {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="w-12 h-12 rounded-full bg-danger-50 flex items-center justify-center mb-4">
-          <FaExclamationTriangle className="text-danger-600 text-xl" />
+          <FaExclamationTriangle className="text-danger-600 text-xl" aria-hidden="true" />
         </div>
-        <p className="text-sm text-neutral-600 mb-4">{error}</p>
-        <button onClick={fetchOrg} className="btn-primary">
+        <p className="text-sm text-content-secondary mb-4">{error}</p>
+        <button type="button" onClick={fetchOrg} className="btn-primary">
           Retry
         </button>
       </div>
@@ -93,7 +98,7 @@ const AdminSettings = () => {
       <div className="mb-4">
         <Link
           to={`/${orgId}/dashboard`}
-          className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors font-medium"
+          className="inline-flex items-center text-sm text-content-muted hover:text-content-primary transition-colors duration-200 font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
           &larr; Back to Dashboard
         </Link>
@@ -104,28 +109,27 @@ const AdminSettings = () => {
       <div className="stat-card max-w-xl">
         <form onSubmit={handleSubmit} noValidate className="space-y-5">
           <div>
-            <label htmlFor="org-name" className="block text-sm font-medium text-neutral-700 mb-1.5">
+            <label
+              htmlFor="org-name"
+              className="block text-sm font-medium text-content-primary mb-1.5"
+            >
               Institute Name
             </label>
             <input
               id="org-name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full"
+              onChange={e => setName(e.target.value)}
+              className="input"
               required
               aria-required="true"
               placeholder="Enter institute name"
             />
           </div>
-          <button
-            type="submit"
-            disabled={saving}
-            className="btn-primary inline-flex items-center"
-          >
+          <button type="submit" disabled={saving} className="btn-primary inline-flex items-center">
             {saving ? (
               <>
-                <FaSpinner className="animate-spin mr-2" />
+                <FaSpinner className="animate-spin mr-2" aria-hidden="true" />
                 Saving...
               </>
             ) : (

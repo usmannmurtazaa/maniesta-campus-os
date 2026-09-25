@@ -1,14 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  getDocs,
-} from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { FaSpinner, FaSyncAlt, FaExclamationTriangle, FaHistory } from 'react-icons/fa';
@@ -38,7 +30,7 @@ const AuditLogs = () => {
 
       const q = query(collection(db, 'auditLogs'), ...constraints);
       const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       return {
         docs,
         lastVisible: snap.docs[snap.docs.length - 1],
@@ -75,7 +67,7 @@ const AuditLogs = () => {
     setLoadingMore(true);
     try {
       const { docs, lastVisible, hasMore: more } = await fetchLogs(lastDoc);
-      setLogs((prev) => [...prev, ...docs]);
+      setLogs(prev => [...prev, ...docs]);
       setLastDoc(lastVisible);
       setHasMore(more);
     } catch (err) {
@@ -85,8 +77,8 @@ const AuditLogs = () => {
     }
   };
 
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return '—';
+  const formatTimestamp = timestamp => {
+    if (!timestamp) return '-';
     if (timestamp.seconds != null) {
       return new Date(timestamp.seconds * 1000).toLocaleString();
     }
@@ -97,13 +89,13 @@ const AuditLogs = () => {
     }
   };
 
-  const summarizeDetails = (details) => {
-    if (!details) return '—';
+  const summarizeDetails = details => {
+    if (!details) return '-';
     if (typeof details === 'object') {
       if (details.resource) return `Resource: ${details.resource}`;
       if (details.updated) return `Updated: ${Object.keys(details.updated).join(', ')}`;
       const keys = Object.keys(details);
-      return keys.length ? `Keys: ${keys.join(', ')}` : '—';
+      return keys.length ? `Keys: ${keys.join(', ')}` : '-';
     }
     return String(details).slice(0, 80);
   };
@@ -116,48 +108,55 @@ const AuditLogs = () => {
           <div className="mb-1">
             <Link
               to={`/${orgId}/dashboard`}
-              className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors font-medium"
+              className="inline-flex items-center text-sm text-content-muted hover:text-content-primary transition-colors duration-200 font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
             >
               &larr; Back to Dashboard
             </Link>
           </div>
           <h1 className="page-header">Audit Logs</h1>
         </div>
+
         <button
+          type="button"
           onClick={loadInitial}
           disabled={loading}
           className="btn-secondary inline-flex items-center"
           aria-label="Refresh audit logs"
         >
-          <FaSyncAlt className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <FaSyncAlt className={`mr-2 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           Refresh
         </button>
       </div>
 
       {/* Content */}
-      <div className="bg-white rounded-xl shadow-md border border-neutral-200/60 overflow-hidden">
+      <div className="bg-surface rounded-xl shadow-card border border-border overflow-hidden">
         {loading ? (
           <div className="flex justify-center py-16">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-neutral-200 border-t-primary-600" />
+            <div
+              className="animate-spin rounded-full h-10 w-10 border-2 border-border border-t-primary-600"
+              role="status"
+            >
+              <span className="sr-only">Loading audit logs…</span>
+            </div>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="w-12 h-12 rounded-full bg-danger-50 flex items-center justify-center mb-4">
-              <FaExclamationTriangle className="text-danger-600 text-xl" />
+              <FaExclamationTriangle className="text-danger-600 text-xl" aria-hidden="true" />
             </div>
-            <p className="text-sm text-neutral-600 mb-4">{error}</p>
-            <button onClick={loadInitial} className="btn-primary">
+            <p className="text-sm text-content-secondary mb-4">{error}</p>
+            <button type="button" onClick={loadInitial} className="btn-primary">
               Retry
             </button>
           </div>
         ) : logs.length === 0 ? (
           <div className="py-16 text-center">
-            <FaHistory className="mx-auto text-3xl text-neutral-200 mb-3" />
-            <p className="text-sm text-neutral-500">No audit logs yet.</p>
+            <FaHistory className="mx-auto text-3xl text-content-disabled mb-3" aria-hidden="true" />
+            <p className="text-sm text-content-muted">No audit logs yet.</p>
           </div>
         ) : (
           <div className="table-container">
-            <table className="min-w-full divide-y divide-neutral-100">
+            <table className="min-w-full divide-y divide-border-subtle">
               <thead>
                 <tr>
                   <th className="table-header">Action</th>
@@ -166,19 +165,19 @@ const AuditLogs = () => {
                   <th className="table-header">Timestamp</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-50">
-                {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-neutral-50/50 transition-colors">
-                    <td className="table-cell font-medium text-neutral-900 capitalize">
+              <tbody className="divide-y divide-border-subtle">
+                {logs.map(log => (
+                  <tr key={log.id} className="hover:bg-surface-muted/60 transition-colors">
+                    <td className="table-cell font-medium text-content-primary capitalize">
                       {log.action}
                     </td>
-                    <td className="table-cell text-sm font-mono text-neutral-600">
+                    <td className="table-cell text-sm font-mono text-content-secondary">
                       {log.userId}
                     </td>
-                    <td className="table-cell text-sm text-neutral-500">
+                    <td className="table-cell text-sm text-content-muted">
                       {summarizeDetails(log.details)}
                     </td>
-                    <td className="table-cell text-sm text-neutral-500">
+                    <td className="table-cell text-sm text-content-muted">
                       {formatTimestamp(log.timestamp)}
                     </td>
                   </tr>
@@ -187,16 +186,18 @@ const AuditLogs = () => {
             </table>
           </div>
         )}
+
         {hasMore && !loading && (
-          <div className="flex justify-center py-4 border-t border-neutral-100">
+          <div className="flex justify-center py-4 border-t border-border-subtle">
             <button
+              type="button"
               onClick={loadMore}
               disabled={loadingMore}
               className="btn-secondary inline-flex items-center"
             >
               {loadingMore ? (
                 <>
-                  <FaSpinner className="animate-spin mr-2" />
+                  <FaSpinner className="animate-spin mr-2" aria-hidden="true" />
                   Loading...
                 </>
               ) : (

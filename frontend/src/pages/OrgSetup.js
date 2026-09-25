@@ -1,12 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  doc,
-  setDoc,
-  serverTimestamp,
-  collection,
-} from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, collection } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -20,7 +15,7 @@ const OrgSetup = () => {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState('create'); // 'create' | 'join'
 
-  const handleCreateOrg = async (e) => {
+  const handleCreateOrg = async e => {
     e.preventDefault();
     if (!orgName.trim()) {
       toast.error('Organisation name is required');
@@ -45,7 +40,7 @@ const OrgSetup = () => {
         courseCount: 0,
       });
 
-      // 2. Create / update the user’s profile to belong to this org as admin
+      // 2. Create / update the user's profile to belong to this org as admin
       await setDoc(
         doc(db, 'users', user.uid),
         {
@@ -72,7 +67,7 @@ const OrgSetup = () => {
     }
   };
 
-  const handleJoinOrg = (e) => {
+  const handleJoinOrg = e => {
     e.preventDefault();
     if (!joinCode.trim()) {
       toast.error('Invite code is required');
@@ -82,49 +77,51 @@ const OrgSetup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-surface-subtle flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: 'easeOut' }}
         className="w-full max-w-md"
       >
-        <div className="bg-white rounded-2xl shadow-xl border border-neutral-100 p-6 sm:p-8">
+        <div className="bg-surface rounded-2xl shadow-2xl ring-1 ring-border p-6 sm:p-8">
           {/* Back link */}
           <div className="mb-5">
             <Link
               to="/login"
-              className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors font-medium"
+              className="inline-flex items-center text-sm text-content-muted hover:text-content-primary transition-colors duration-200 font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
             >
               &larr; Back to Login
             </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-neutral-900 mb-1 tracking-tight">
+          <h1 className="text-2xl font-bold text-content-primary mb-1 tracking-tight">
             Set Up Your Organisation
           </h1>
-          <p className="text-sm text-neutral-500 mb-6">
+          <p className="text-sm text-content-muted mb-6">
             Create a new campus or join an existing one.
           </p>
 
           {/* Mode toggle */}
-          <div className="flex mb-6 p-1 bg-neutral-100 rounded-lg">
+          <div className="flex mb-6 p-1 bg-surface-muted rounded-lg">
             <button
+              type="button"
               onClick={() => setMode('create')}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
                 mode === 'create'
-                  ? 'bg-white text-neutral-900 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-700'
+                  ? 'bg-surface text-content-primary shadow-sm'
+                  : 'text-content-muted hover:text-content-primary'
               }`}
             >
               Create New
             </button>
             <button
+              type="button"
               onClick={() => setMode('join')}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 ${
                 mode === 'join'
-                  ? 'bg-white text-neutral-900 shadow-sm'
-                  : 'text-neutral-500 hover:text-neutral-700'
+                  ? 'bg-surface text-content-primary shadow-sm'
+                  : 'text-content-muted hover:text-content-primary'
               }`}
             >
               Join Existing
@@ -134,15 +131,18 @@ const OrgSetup = () => {
           {mode === 'create' ? (
             <form onSubmit={handleCreateOrg}>
               <div className="mb-4">
-                <label htmlFor="org-name" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                <label
+                  htmlFor="org-name"
+                  className="block text-sm font-medium text-content-primary mb-1.5"
+                >
                   Organisation Name
                 </label>
                 <input
                   id="org-name"
                   type="text"
                   value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
-                  className="w-full"
+                  onChange={e => setOrgName(e.target.value)}
+                  className="input"
                   placeholder="e.g., ABC Academy"
                   required
                   aria-required="true"
@@ -159,27 +159,31 @@ const OrgSetup = () => {
           ) : (
             <form onSubmit={handleJoinOrg}>
               <div className="mb-4">
-                <label htmlFor="invite-code" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                <label
+                  htmlFor="invite-code"
+                  className="block text-sm font-medium text-content-primary mb-1.5"
+                >
                   Invite Code
                 </label>
                 <input
                   id="invite-code"
                   type="text"
                   value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value)}
-                  className="w-full"
+                  onChange={e => setJoinCode(e.target.value)}
+                  className="input"
                   placeholder="Enter code provided by admin"
                   required
                   aria-required="true"
                 />
               </div>
-              <p className="text-xs text-neutral-500 mb-3">
-                Joining via invite code will be available soon. For now, your admin can add you directly.
+              <p className="text-xs text-content-muted mb-3">
+                Joining via invite code will be available soon. For now, your admin can add you
+                directly.
               </p>
               <button
                 type="submit"
                 disabled
-                className="w-full py-2.5 rounded-lg text-sm font-medium bg-neutral-100 text-neutral-400 cursor-not-allowed"
+                className="w-full py-2.5 rounded-lg text-sm font-medium bg-surface-muted text-content-disabled cursor-not-allowed"
               >
                 Join Organisation (Coming Soon)
               </button>

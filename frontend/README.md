@@ -183,7 +183,7 @@ The included `netlify.toml` already handles SPA redirects and caching for static
 
 ## 🤝 Contributing
 
-We welcome contributions!  
+Contributions are welcome.  
 Please open an issue first to discuss what you’d like to change, or submit a pull request directly.
 
 This project follows standard open‑source practices. Make sure your code is clean, tested, and documented.
@@ -192,7 +192,7 @@ This project follows standard open‑source practices. Make sure your code is cl
 
 ## 📄 License
 
-ISC – Maniesta Campus Team
+ISC – Usman Murtaza
 
 ---
 
@@ -206,5 +206,5 @@ ISC – Maniesta Campus Team
     <img src="https://img.shields.io/badge/Portfolio-Visit-blue?style=for-the-badge&logo=netlify" alt="Portfolio"/>
   </a>
   <br/>
-  <a href="mailto:usmanmurtaza2004@gmail.com" style="font-size:0.9rem">usmanmurtaza2004@gmail.com</a>
+  <a href="mailto:usmanmurtazaportfolio@gmail.com" style="font-size:0.9rem">usmanmurtazaportfolio@gmail.com</a>
 </div>

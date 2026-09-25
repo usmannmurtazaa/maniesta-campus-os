@@ -1,9 +1,7 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 
 module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     container: {
       center: true,
@@ -17,7 +15,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['"Inter"', ...defaultTheme.fontFamily.sans],
+        sans: ['Inter', ...defaultTheme.fontFamily.sans],
       },
       fontSize: {
         '2xs': ['0.675rem', { lineHeight: '1rem' }],
@@ -80,26 +78,90 @@ module.exports = {
           600: '#dc2626',
           700: '#b91c1c',
         },
+
+        /* Semantic surface tokens. Use these instead of hardcoded
+           `bg-white` / `bg-neutral-50` when you want the theme to shift
+           cleanly across light/dark variants or brand refreshes. */
+        surface: {
+          DEFAULT: '#ffffff',
+          subtle: '#f8f9fc',
+          muted: '#f1f3f8',
+          raised: '#ffffff',
+          overlay: 'rgba(21, 28, 46, 0.55)',
+        },
+
+        /* Semantic text tokens. Map to the neutral scale for consistency
+           while giving you a stable name to reference. */
+        content: {
+          primary: '#151c2e',
+          secondary: '#4b5468',
+          muted: '#9ba2b3',
+          disabled: '#cdd2de',
+        },
+
+        /* Semantic border tokens. */
+        border: {
+          DEFAULT: '#e4e7ee',
+          subtle: '#f1f3f8',
+          strong: '#cdd2de',
+        },
       },
       boxShadow: {
-        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
-        'DEFAULT': '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
-        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
-        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)',
-        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06)',
+        sm: '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+        DEFAULT: '0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
+        md: '0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
+        lg: '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)',
+        xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06)',
         '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.18)',
+
+        /* Card presets — consistent elevation across the app. */
+        card: '0 1px 2px 0 rgba(21, 28, 46, 0.04), 0 1px 3px 0 rgba(21, 28, 46, 0.06)',
+        'card-hover':
+          '0 10px 25px -8px rgba(21, 28, 46, 0.12), 0 4px 10px -4px rgba(21, 28, 46, 0.06)',
+
+        /* Accent glow — use for focus states and emphasized elements. */
+        glow: '0 0 0 4px rgba(59, 109, 243, 0.15)',
+        'glow-strong': '0 0 24px rgba(59, 109, 243, 0.35)',
+      },
+      borderRadius: {
+        '4xl': '2rem',
+      },
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(135deg, #2551e6 0%, #1d40d3 100%)',
+        'gradient-surface': 'linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%)',
       },
       transitionDuration: {
-        '400': '400ms',
+        400: '400ms',
       },
       transitionTimingFunction: {
         'in-expo': 'cubic-bezier(0.95, 0.05, 0.795, 0.035)',
         'out-expo': 'cubic-bezier(0.19, 1, 0.22, 1)',
       },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.96)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { boxShadow: '0 0 0 4px rgba(59, 109, 243, 0.15)' },
+          '50%': { boxShadow: '0 0 0 8px rgba(59, 109, 243, 0.05)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.3s ease-out both',
+        'fade-in-up': 'fade-in-up 0.4s ease-out both',
+        'scale-in': 'scale-in 0.25s ease-out both',
+        'glow-pulse': 'glow-pulse 2.4s ease-in-out infinite',
+      },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-  ],
+  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
 };

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from './AuthContext';
@@ -37,19 +37,26 @@ export const OrgProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [user?.orgId]); // only refetch when orgId changes
+    // Track only the orgId, not the entire user object, so unrelated
+    // user field changes (displayName, role, etc.) do not trigger a
+    // refetch of the organisation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.orgId]);
 
   useEffect(() => {
     fetchOrg();
   }, [fetchOrg]);
 
-  // Memoize context value to prevent unnecessary re‑renders of consumers
-  const value = useMemo(() => ({
-    org,
-    loading,
-    error,
-    refetch: fetchOrg,
-  }), [org, loading, error, fetchOrg]);
+  // Memoize context value to prevent unnecessary re-renders of consumers.
+  const value = useMemo(
+    () => ({
+      org,
+      loading,
+      error,
+      refetch: fetchOrg,
+    }),
+    [org, loading, error, fetchOrg]
+  );
 
   return <OrgContext.Provider value={value}>{children}</OrgContext.Provider>;
 };

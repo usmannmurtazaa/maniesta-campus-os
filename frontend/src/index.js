@@ -5,7 +5,7 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Firebase initialisation is delegated to services/firebase.js and consumed by
-// context providers. This keeps the entry point environment‑agnostic.
+// context providers. This keeps the entry point environment-agnostic.
 
 const container = document.getElementById('root');
 if (!container) {

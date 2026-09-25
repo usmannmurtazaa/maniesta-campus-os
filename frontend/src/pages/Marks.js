@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   collection,
   query,
@@ -13,17 +13,24 @@ import {
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
-import { FaPlus, FaEdit, FaTrash, FaSpinner, FaExclamationTriangle, FaChartBar } from 'react-icons/fa';
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaSpinner,
+  FaExclamationTriangle,
+  FaChartBar,
+} from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ----------------------------------------------------------------------
-// Service helpers (unchanged)
+// Service helpers
 // ----------------------------------------------------------------------
 async function fetchOrgCourses(orgId) {
   const q = query(collection(db, 'courses'), where('orgId', '==', orgId));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 async function fetchStudentsByCourse(orgId, courseId) {
@@ -34,7 +41,7 @@ async function fetchStudentsByCourse(orgId, courseId) {
     where('courseId', '==', courseId)
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 async function fetchMarksByCourse(orgId, courseId) {
@@ -45,7 +52,7 @@ async function fetchMarksByCourse(orgId, courseId) {
     orderBy('createdAt', 'desc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 async function addMark(orgId, data) {
@@ -66,7 +73,7 @@ async function deleteMark(id) {
 }
 
 // ----------------------------------------------------------------------
-// Custom hook (unchanged)
+// Custom hook
 // ----------------------------------------------------------------------
 function useMarks(orgId) {
   const [courses, setCourses] = useState([]);
@@ -80,19 +87,22 @@ function useMarks(orgId) {
   useEffect(() => {
     if (!orgId) return;
     fetchOrgCourses(orgId)
-      .then((data) => {
+      .then(data => {
         setCourses(data);
         if (data.length > 0 && !selectedCourse) {
           setSelectedCourse(data[0].id);
         }
       })
       .catch(() => toast.error('Failed to load courses'));
+    // selectedCourse is intentionally not in the deps — we only want to
+    // fetch the course list when the org changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
   useEffect(() => {
     if (!orgId || !selectedCourse) return;
     fetchStudentsByCourse(orgId, selectedCourse)
-      .then((data) => setStudents(data))
+      .then(data => setStudents(data))
       .catch(() => toast.error('Failed to load students'));
   }, [orgId, selectedCourse]);
 
@@ -115,7 +125,7 @@ function useMarks(orgId) {
     loadMarks();
   }, [loadMarks]);
 
-  const add = async (data) => {
+  const add = async data => {
     setSaving(true);
     try {
       await addMark(orgId, data);
@@ -134,7 +144,7 @@ function useMarks(orgId) {
     try {
       await updateMark(id, data);
       toast.success('Mark updated');
-      setMarks((prev) => prev.map((m) => (m.id === id ? { ...m, ...data } : m)));
+      setMarks(prev => prev.map(m => (m.id === id ? { ...m, ...data } : m)));
     } catch (err) {
       toast.error('Failed to update mark');
       throw err;
@@ -143,11 +153,11 @@ function useMarks(orgId) {
     }
   };
 
-  const remove = async (id) => {
+  const remove = async id => {
     try {
       await deleteMark(id);
       toast.success('Mark deleted');
-      setMarks((prev) => prev.filter((m) => m.id !== id));
+      setMarks(prev => prev.filter(m => m.id !== id));
     } catch (err) {
       toast.error('Failed to delete mark');
       throw err;
@@ -229,7 +239,9 @@ const Marks = () => {
 
   const studentMap = useMemo(() => {
     const map = {};
-    students.forEach((s) => { map[s.id] = s.name; });
+    students.forEach(s => {
+      map[s.id] = s.name;
+    });
     return map;
   }, [students]);
 
@@ -244,11 +256,11 @@ const Marks = () => {
     setFormErrors({});
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = e => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: undefined }));
+      setFormErrors(prev => ({ ...prev, [name]: undefined }));
     }
   };
 
@@ -267,7 +279,7 @@ const Marks = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!orgId) return;
     if (!validateForm()) return;
@@ -302,7 +314,7 @@ const Marks = () => {
     }
   };
 
-  const handleEdit = (mark) => {
+  const handleEdit = mark => {
     setEditingMark(mark);
     setFormData({
       studentId: mark.studentId || '',
@@ -315,7 +327,7 @@ const Marks = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async id => {
     if (window.confirm('Are you sure you want to delete this mark?')) {
       await remove(id);
     }
@@ -325,18 +337,18 @@ const Marks = () => {
     if (marks.length === 0) return null;
     const sum = marks.reduce((acc, m) => acc + (m.obtainedMarks || 0), 0);
     const avg = (sum / marks.length).toFixed(1);
-    const highest = Math.max(...marks.map((m) => m.obtainedMarks || 0));
-    const lowest = Math.min(...marks.map((m) => m.obtainedMarks || 0));
-    const passCount = marks.filter((m) => (m.percentage || 0) >= 40).length;
+    const highest = Math.max(...marks.map(m => m.obtainedMarks || 0));
+    const lowest = Math.min(...marks.map(m => m.obtainedMarks || 0));
+    const passCount = marks.filter(m => (m.percentage || 0) >= 40).length;
     const passRate = Math.round((passCount / marks.length) * 100);
     return { avg, highest, lowest, passRate, count: marks.length };
   }, [marks]);
 
   const gradeDistribution = useMemo(() => {
     const grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'];
-    return grades.map((grade) => ({
+    return grades.map(grade => ({
       grade,
-      count: marks.filter((m) => m.grade === grade).length,
+      count: marks.filter(m => m.grade === grade).length,
     }));
   }, [marks]);
 
@@ -345,9 +357,10 @@ const Marks = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h1 className="page-header">Marks Management</h1>
-          <p className="text-sm text-neutral-500 mt-1">Record and evaluate student marks</p>
+          <p className="text-sm text-content-muted mt-1">Record and evaluate student marks</p>
         </div>
         <button
+          type="button"
           onClick={() => {
             setEditingMark(null);
             resetForm();
@@ -355,7 +368,7 @@ const Marks = () => {
           }}
           className="btn-primary inline-flex items-center"
         >
-          <FaPlus className="mr-2" /> Add Marks
+          <FaPlus className="mr-2" aria-hidden="true" /> Add Marks
         </button>
       </div>
 
@@ -363,16 +376,19 @@ const Marks = () => {
       <div className="stat-card mb-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1 w-full sm:w-auto">
-            <label htmlFor="marks-course" className="block text-sm font-medium text-neutral-700 mb-1.5">
+            <label
+              htmlFor="marks-course"
+              className="block text-sm font-medium text-content-primary mb-1.5"
+            >
               Select Course
             </label>
             <select
               id="marks-course"
               value={selectedCourse}
-              onChange={(e) => setSelectedCourse(e.target.value)}
-              className="w-full sm:w-auto min-w-[200px]"
+              onChange={e => setSelectedCourse(e.target.value)}
+              className="input w-full sm:w-auto min-w-[200px]"
             >
-              {courses.map((course) => (
+              {courses.map(course => (
                 <option key={course.id} value={course.id}>
                   {course.code}: {course.name}
                 </option>
@@ -380,38 +396,49 @@ const Marks = () => {
             </select>
           </div>
           <button
+            type="button"
             onClick={loadMarks}
             className="btn-secondary inline-flex items-center"
             disabled={loading}
           >
-            {loading ? <FaSpinner className="animate-spin mr-2" /> : null}
+            {loading ? <FaSpinner className="animate-spin mr-2" aria-hidden="true" /> : null}
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
         </div>
       </div>
 
       {/* Marks Table */}
-      <div className="bg-white rounded-xl shadow-md border border-neutral-200/60 overflow-hidden mb-8">
+      <div className="bg-surface rounded-xl shadow-card border border-border overflow-hidden mb-8">
         {loading ? (
           <div className="flex justify-center py-16">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-neutral-200 border-t-primary-600" />
+            <div
+              className="animate-spin rounded-full h-10 w-10 border-2 border-border border-t-primary-600"
+              role="status"
+            >
+              <span className="sr-only">Loading marks…</span>
+            </div>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-16">
             <div className="w-12 h-12 rounded-full bg-danger-50 flex items-center justify-center mb-4">
-              <FaExclamationTriangle className="text-danger-600 text-xl" />
+              <FaExclamationTriangle className="text-danger-600 text-xl" aria-hidden="true" />
             </div>
-            <p className="text-sm text-neutral-600 mb-4">Failed to load marks.</p>
-            <button onClick={loadMarks} className="btn-primary">Retry</button>
+            <p className="text-sm text-content-secondary mb-4">Failed to load marks.</p>
+            <button type="button" onClick={loadMarks} className="btn-primary">
+              Retry
+            </button>
           </div>
         ) : marks.length === 0 ? (
           <div className="py-16 text-center">
-            <FaChartBar className="mx-auto text-3xl text-neutral-200 mb-3" />
-            <p className="text-sm text-neutral-500">No marks recorded for this course yet.</p>
+            <FaChartBar
+              className="mx-auto text-3xl text-content-disabled mb-3"
+              aria-hidden="true"
+            />
+            <p className="text-sm text-content-muted">No marks recorded for this course yet.</p>
           </div>
         ) : (
           <div className="table-container">
-            <table className="min-w-full divide-y divide-neutral-100">
+            <table className="min-w-full divide-y divide-border-subtle">
               <thead>
                 <tr>
                   <th className="table-header">Student</th>
@@ -424,13 +451,13 @@ const Marks = () => {
                   <th className="table-header">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-50">
-                {marks.map((mark) => {
-                  const student = students.find((s) => s.id === mark.studentId);
+              <tbody className="divide-y divide-border-subtle">
+                {marks.map(mark => {
+                  const student = students.find(s => s.id === mark.studentId);
                   const percentage = mark.percentage || 0;
                   const gradeClass = getGradeBadgeClass(mark.grade);
                   return (
-                    <tr key={mark.id} className="hover:bg-neutral-50/50 transition-colors">
+                    <tr key={mark.id} className="hover:bg-surface-muted/60 transition-colors">
                       <td className="table-cell font-medium">
                         {student?.name || 'Unknown'} ({student?.studentId || ''})
                       </td>
@@ -439,8 +466,10 @@ const Marks = () => {
                         <span className="badge">{mark.examType}</span>
                       </td>
                       <td className="table-cell">
-                        <span className="font-semibold text-neutral-900">{mark.obtainedMarks}</span>
-                        <span className="text-neutral-400">/{mark.totalMarks}</span>
+                        <span className="font-semibold text-content-primary">
+                          {mark.obtainedMarks}
+                        </span>
+                        <span className="text-content-muted">/{mark.totalMarks}</span>
                       </td>
                       <td className="table-cell">
                         <span
@@ -448,10 +477,10 @@ const Marks = () => {
                             percentage >= 80
                               ? 'badge-success'
                               : percentage >= 60
-                              ? 'badge-success'
-                              : percentage >= 40
-                              ? 'badge-warning'
-                              : 'badge-danger'
+                                ? 'badge-success'
+                                : percentage >= 40
+                                  ? 'badge-warning'
+                                  : 'badge-danger'
                           }`}
                         >
                           {percentage}%
@@ -461,25 +490,31 @@ const Marks = () => {
                         <span className={gradeClass}>{mark.grade}</span>
                       </td>
                       <td className="table-cell">
-                        <span className={`badge ${percentage >= 40 ? 'badge-success' : 'badge-danger'}`}>
+                        <span
+                          className={`badge ${percentage >= 40 ? 'badge-success' : 'badge-danger'}`}
+                        >
                           {percentage >= 40 ? 'Pass' : 'Fail'}
                         </span>
                       </td>
                       <td className="table-cell">
                         <div className="flex space-x-2">
                           <button
+                            type="button"
                             onClick={() => handleEdit(mark)}
-                            className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-50 transition-colors"
+                            className="p-1.5 rounded-lg text-primary-600 hover:bg-primary-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                             title="Edit mark"
+                            aria-label={`Edit mark for ${student?.name || 'student'}`}
                           >
-                            <FaEdit />
+                            <FaEdit aria-hidden="true" />
                           </button>
                           <button
+                            type="button"
                             onClick={() => handleDelete(mark.id)}
-                            className="p-1.5 rounded-lg text-danger-600 hover:bg-danger-50 transition-colors"
+                            className="p-1.5 rounded-lg text-danger-600 hover:bg-danger-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-danger-500 focus-visible:ring-offset-2"
                             title="Delete mark"
+                            aria-label={`Delete mark for ${student?.name || 'student'}`}
                           >
-                            <FaTrash />
+                            <FaTrash aria-hidden="true" />
                           </button>
                         </div>
                       </td>
@@ -496,20 +531,28 @@ const Marks = () => {
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="stat-card">
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Average</p>
-            <p className="text-2xl font-bold text-neutral-900 mt-1">{stats.avg}%</p>
+            <p className="text-xs font-medium text-content-muted uppercase tracking-wider">
+              Average
+            </p>
+            <p className="text-2xl font-bold text-content-primary mt-1">{stats.avg}%</p>
           </div>
           <div className="stat-card">
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Highest</p>
-            <p className="text-2xl font-bold text-neutral-900 mt-1">{stats.highest}%</p>
+            <p className="text-xs font-medium text-content-muted uppercase tracking-wider">
+              Highest
+            </p>
+            <p className="text-2xl font-bold text-content-primary mt-1">{stats.highest}%</p>
           </div>
           <div className="stat-card">
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Lowest</p>
-            <p className="text-2xl font-bold text-neutral-900 mt-1">{stats.lowest}%</p>
+            <p className="text-xs font-medium text-content-muted uppercase tracking-wider">
+              Lowest
+            </p>
+            <p className="text-2xl font-bold text-content-primary mt-1">{stats.lowest}%</p>
           </div>
           <div className="stat-card">
-            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Pass Rate</p>
-            <p className="text-2xl font-bold text-neutral-900 mt-1">{stats.passRate}%</p>
+            <p className="text-xs font-medium text-content-muted uppercase tracking-wider">
+              Pass Rate
+            </p>
+            <p className="text-2xl font-bold text-content-primary mt-1">{stats.passRate}%</p>
           </div>
         </div>
       )}
@@ -517,20 +560,27 @@ const Marks = () => {
       {/* Grade Distribution */}
       {marks.length > 0 && (
         <div className="stat-card mb-8">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4">Grade Distribution</h2>
+          <h2 className="text-lg font-semibold text-content-primary mb-4">Grade Distribution</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
-            {gradeDistribution.map((item) => {
+            {gradeDistribution.map(item => {
               const gradeClass = getGradeBadgeClass(item.grade);
               return (
-                <div key={item.grade} className="text-center p-4 rounded-xl border border-neutral-100">
-                  <div className={`text-2xl font-bold ${gradeClass.split(' ')[1] || 'text-neutral-600'}`}>
+                <div
+                  key={item.grade}
+                  className="text-center p-4 rounded-xl border border-border-subtle"
+                >
+                  <div
+                    className={`text-2xl font-bold ${
+                      gradeClass.split(' ')[1] || 'text-content-secondary'
+                    }`}
+                  >
                     {item.count}
                   </div>
-                  <div className="text-sm font-medium text-neutral-700 mt-1">Grade {item.grade}</div>
-                  <div className="text-xs text-neutral-500">
-                    {marks.length > 0
-                      ? Math.round((item.count / marks.length) * 100) + '%'
-                      : '0%'}
+                  <div className="text-sm font-medium text-content-primary mt-1">
+                    Grade {item.grade}
+                  </div>
+                  <div className="text-xs text-content-muted">
+                    {marks.length > 0 ? Math.round((item.count / marks.length) * 100) + '%' : '0%'}
                   </div>
                 </div>
               );
@@ -555,16 +605,19 @@ const Marks = () => {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-neutral-100 max-h-[85vh] overflow-y-auto"
+              className="relative w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-border max-h-[85vh] overflow-y-auto"
             >
               <div className="p-6">
-                <h2 className="text-xl font-semibold text-neutral-900 mb-5">
+                <h2 className="text-xl font-semibold text-content-primary mb-5">
                   {editingMark ? 'Edit Mark' : 'Add New Mark'}
                 </h2>
                 <form onSubmit={handleSubmit} noValidate>
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="mark-student" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label
+                        htmlFor="mark-student"
+                        className="block text-sm font-medium text-content-primary mb-1.5"
+                      >
                         Student
                       </label>
                       <select
@@ -572,12 +625,16 @@ const Marks = () => {
                         name="studentId"
                         value={formData.studentId}
                         onChange={handleInputChange}
-                        className={`w-full ${formErrors.studentId ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                        className={`input ${
+                          formErrors.studentId
+                            ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                            : ''
+                        }`}
                         required
                         aria-required="true"
                       >
                         <option value="">Select a student</option>
-                        {students.map((student) => (
+                        {students.map(student => (
                           <option key={student.id} value={student.id}>
                             {student.name} ({student.studentId})
                           </option>
@@ -587,8 +644,12 @@ const Marks = () => {
                         <p className="text-danger-600 text-xs mt-1">{formErrors.studentId}</p>
                       )}
                     </div>
+
                     <div>
-                      <label htmlFor="mark-subject" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label
+                        htmlFor="mark-subject"
+                        className="block text-sm font-medium text-content-primary mb-1.5"
+                      >
                         Subject
                       </label>
                       <input
@@ -597,15 +658,23 @@ const Marks = () => {
                         name="subject"
                         value={formData.subject}
                         onChange={handleInputChange}
-                        className={`w-full ${formErrors.subject ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                        className={`input ${
+                          formErrors.subject
+                            ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                            : ''
+                        }`}
                         required
                       />
                       {formErrors.subject && (
                         <p className="text-danger-600 text-xs mt-1">{formErrors.subject}</p>
                       )}
                     </div>
+
                     <div>
-                      <label htmlFor="mark-exam-type" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <label
+                        htmlFor="mark-exam-type"
+                        className="block text-sm font-medium text-content-primary mb-1.5"
+                      >
                         Exam Type
                       </label>
                       <select
@@ -613,7 +682,7 @@ const Marks = () => {
                         name="examType"
                         value={formData.examType}
                         onChange={handleInputChange}
-                        className="w-full"
+                        className="input"
                       >
                         <option>Mid-term</option>
                         <option>Final</option>
@@ -623,9 +692,13 @@ const Marks = () => {
                         <option>Practical</option>
                       </select>
                     </div>
+
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="mark-obtained" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                        <label
+                          htmlFor="mark-obtained"
+                          className="block text-sm font-medium text-content-primary mb-1.5"
+                        >
                           Marks Obtained
                         </label>
                         <input
@@ -634,7 +707,11 @@ const Marks = () => {
                           name="marksObtained"
                           value={formData.marksObtained}
                           onChange={handleInputChange}
-                          className={`w-full ${formErrors.marksObtained ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                          className={`input ${
+                            formErrors.marksObtained
+                              ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                              : ''
+                          }`}
                           min="0"
                           step="0.5"
                           required
@@ -644,7 +721,10 @@ const Marks = () => {
                         )}
                       </div>
                       <div>
-                        <label htmlFor="mark-total" className="block text-sm font-medium text-neutral-700 mb-1.5">
+                        <label
+                          htmlFor="mark-total"
+                          className="block text-sm font-medium text-content-primary mb-1.5"
+                        >
                           Total Marks
                         </label>
                         <input
@@ -653,7 +733,11 @@ const Marks = () => {
                           name="totalMarks"
                           value={formData.totalMarks}
                           onChange={handleInputChange}
-                          className={`w-full ${formErrors.totalMarks ? 'border-danger-500 focus:ring-danger-500' : ''}`}
+                          className={`input ${
+                            formErrors.totalMarks
+                              ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500'
+                              : ''
+                          }`}
                           min="1"
                           step="1"
                           required
@@ -663,21 +747,27 @@ const Marks = () => {
                         )}
                       </div>
                     </div>
+
                     {formData.marksObtained && formData.totalMarks && (
-                      <div className="p-3 bg-neutral-50 rounded-lg text-sm text-neutral-600">
+                      <div className="p-3 bg-surface-muted rounded-lg text-sm text-content-secondary">
                         Preview: {formData.marksObtained}/{formData.totalMarks} ={' '}
                         {Math.round(
-                          (parseFloat(formData.marksObtained) / parseFloat(formData.totalMarks)) * 100
+                          (parseFloat(formData.marksObtained) / parseFloat(formData.totalMarks)) *
+                            100
                         )}
-                        % ({calculateGrade(
+                        % (
+                        {calculateGrade(
                           Math.round(
-                            (parseFloat(formData.marksObtained) / parseFloat(formData.totalMarks)) * 100
+                            (parseFloat(formData.marksObtained) / parseFloat(formData.totalMarks)) *
+                              100
                           )
-                        )})
+                        )}
+                        )
                       </div>
                     )}
                   </div>
-                  <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-neutral-100">
+
+                  <div className="flex justify-end gap-3 mt-6 pt-5 border-t border-border-subtle">
                     <button
                       type="button"
                       onClick={() => setShowModal(false)}
@@ -690,7 +780,7 @@ const Marks = () => {
                       disabled={saving}
                       className="btn-primary inline-flex items-center"
                     >
-                      {saving && <FaSpinner className="animate-spin mr-2" />}
+                      {saving && <FaSpinner className="animate-spin mr-2" aria-hidden="true" />}
                       {editingMark ? 'Update' : 'Add'} Mark
                     </button>
                   </div>

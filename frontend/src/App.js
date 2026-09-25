@@ -1,10 +1,10 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { OrgProvider } from './context/OrgContext';
 
-// Lazy‑loaded pages
+// Lazy-loaded pages
 const Login = lazy(() => import('./pages/Login'));
 const OrgSetup = lazy(() => import('./pages/OrgSetup'));
 const About = lazy(() => import('./pages/About'));
@@ -35,7 +35,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 // ------------------------------------------------------------------
 function ScrollToTop() {
   const { pathname } = useLocation();
-  React.useEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
   return null;
@@ -53,16 +53,20 @@ function PublicRoute({ children }) {
 }
 
 // ------------------------------------------------------------------
-// 3. PageLoader – premium spinner using the design system
+// 3. PageLoader – spinner using the design system
 // ------------------------------------------------------------------
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-    <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-primary-600" />
+  <div className="min-h-screen flex items-center justify-center bg-surface-subtle">
+    <div
+      className="animate-spin rounded-full h-12 w-12 border-2 border-border border-t-primary-600"
+      role="status"
+      aria-label="Loading"
+    />
   </div>
 );
 
 // ------------------------------------------------------------------
-// 4. Toast options – aligned with the premium design system
+// 4. Toast options – aligned with the design system
 // ------------------------------------------------------------------
 const toastOptions = {
   style: {
@@ -111,7 +115,14 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public pages */}
-                <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/privacy" element={<Privacy />} />
@@ -127,7 +138,7 @@ function App() {
                   }
                 />
 
-                {/* Org‑scoped portal */}
+                {/* Org-scoped portal */}
                 <Route
                   path="/:orgId"
                   element={
@@ -199,7 +210,7 @@ function App() {
                   />
                 </Route>
 
-                {/* Catch‑all */}
+                {/* Catch-all */}
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </Suspense>

@@ -6,38 +6,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#3b82f6" />
 
+    <!-- Google Search Console verification.
+         Confirms ownership of maniestacampus.netlify.app for
+         search.google.com/search-console. Do not remove. -->
+    <meta name="google-site-verification" content="8tNUALDy2r2_UlsW_1cTKj2dwBiSn_0urgZbIVqXFcM" />
+
     <!-- Primary Meta Tags -->
-    <title>Maniesta Campus OS – Smart Student Management</title>
+    <title>Maniesta Campus OS | Smart Student Management</title>
     <meta
       name="description"
       content="Multi-tenant student management platform for modern institutes. Manage students, courses, attendance and marks with real-time dashboards, role-based access, and Firebase security."
     />
+    <meta
+      name="keywords"
+      content="maniesta campus, student management system, campus management, education saas, react, firebase, school management, maniesta by usman murtaza"
+    />
+    <meta name="author" content="Usman Murtaza" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://maniestacampus.netlify.app" />
+
+    <!-- PWA manifest. Required for install prompt and home-screen icons. -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- iOS Safari home-screen icon. -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://maniestacampus.netlify.app" />
-    <meta property="og:title" content="Maniesta Campus OS – Smart Student Management SaaS" />
+    <meta property="og:title" content="Maniesta Campus OS | Smart Student Management SaaS" />
     <meta
       property="og:description"
       content="Multi-tenant student management platform for modern institutes. Manage students, courses, attendance and marks with real-time dashboards."
     />
-    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta property="og:image" content="https://maniestacampus.netlify.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Maniesta Campus OS | Student Management SaaS" />
+    <meta property="og:site_name" content="Maniesta Campus OS" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://maniestacampus.netlify.app" />
-    <meta name="twitter:title" content="Maniesta Campus OS – Smart Student Management SaaS" />
+    <meta name="twitter:title" content="Maniesta Campus OS | Smart Student Management SaaS" />
     <meta
       name="twitter:description"
       content="Multi-tenant student management platform for modern institutes. Manage students, courses, attendance and marks with real-time dashboards."
     />
-    <meta name="twitter:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta name="twitter:image" content="https://maniestacampus.netlify.app/og-image.png" />
+    <meta name="twitter:site" content="@usman_murtazaa" />
+    <meta name="twitter:creator" content="@usman_murtazaa" />
 
-    <!-- Preconnect for Firebase domains -->
-    <link rel="preconnect" href="https://*.firebaseio.com" crossorigin />
-    <link rel="preconnect" href="https://*.googleapis.com" crossorigin />
+    <!-- Preconnect to Firebase endpoints for faster initial SDK handshake. -->
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

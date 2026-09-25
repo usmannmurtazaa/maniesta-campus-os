@@ -1,13 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  doc,
-} from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -25,14 +18,14 @@ const RoleManagement = () => {
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(null);
 
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     if (!orgId) return;
     try {
       setLoading(true);
       setError(null);
       const q = query(collection(db, 'users'), where('orgId', '==', orgId));
       const snap = await getDocs(q);
-      const users = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       setMembers(users);
     } catch (err) {
       console.error(err);
@@ -41,11 +34,11 @@ const RoleManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [orgId]);
 
   useEffect(() => {
     fetchMembers();
-  }, [orgId]);
+  }, [fetchMembers]);
 
   const handleRoleChange = async (userId, newRole) => {
     if (userId === currentUserId) {
@@ -53,7 +46,7 @@ const RoleManagement = () => {
       return;
     }
 
-    if (newRole === members.find((m) => m.id === userId)?.role) return;
+    if (newRole === members.find(m => m.id === userId)?.role) return;
 
     if (!window.confirm(`Are you sure you want to change this user's role to "${newRole}"?`)) {
       return;
@@ -62,9 +55,7 @@ const RoleManagement = () => {
     setUpdating(userId);
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
-      setMembers((prev) =>
-        prev.map((m) => (m.id === userId ? { ...m, role: newRole } : m))
-      );
+      setMembers(prev => prev.map(m => (m.id === userId ? { ...m, role: newRole } : m)));
       toast.success('Role updated');
     } catch (err) {
       toast.error('Failed to update role');
@@ -73,19 +64,28 @@ const RoleManagement = () => {
     }
   };
 
-  const getRoleBadge = (role) => {
+  const getRoleBadge = role => {
     switch (role) {
-      case 'admin': return 'badge badge-success';
-      case 'teacher': return 'badge badge-warning';
-      case 'student': return 'badge';
-      default: return 'badge';
+      case 'admin':
+        return 'badge badge-success';
+      case 'teacher':
+        return 'badge badge-warning';
+      case 'student':
+        return 'badge';
+      default:
+        return 'badge';
     }
   };
 
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-neutral-200 border-t-primary-600" />
+        <div
+          className="animate-spin rounded-full h-10 w-10 border-2 border-border border-t-primary-600"
+          role="status"
+        >
+          <span className="sr-only">Loading members…</span>
+        </div>
       </div>
     );
   }
@@ -94,10 +94,12 @@ const RoleManagement = () => {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="w-12 h-12 rounded-full bg-danger-50 flex items-center justify-center mb-4">
-          <FaExclamationTriangle className="text-danger-600 text-xl" />
+          <FaExclamationTriangle className="text-danger-600 text-xl" aria-hidden="true" />
         </div>
-        <p className="text-sm text-neutral-600 mb-4">{error}</p>
-        <button onClick={fetchMembers} className="btn-primary">Retry</button>
+        <p className="text-sm text-content-secondary mb-4">{error}</p>
+        <button type="button" onClick={fetchMembers} className="btn-primary">
+          Retry
+        </button>
       </div>
     );
   }
@@ -108,7 +110,7 @@ const RoleManagement = () => {
       <div className="mb-4">
         <Link
           to={`/${orgId}/dashboard`}
-          className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors font-medium"
+          className="inline-flex items-center text-sm text-content-muted hover:text-content-primary transition-colors duration-200 font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
         >
           &larr; Back to Dashboard
         </Link>
@@ -116,9 +118,9 @@ const RoleManagement = () => {
 
       <h1 className="page-header mb-6">Role Management</h1>
 
-      <div className="bg-white rounded-xl shadow-md border border-neutral-200/60 overflow-hidden">
+      <div className="bg-surface rounded-xl shadow-card border border-border overflow-hidden">
         <div className="table-container">
-          <table className="min-w-full divide-y divide-neutral-100">
+          <table className="min-w-full divide-y divide-border-subtle">
             <thead>
               <tr>
                 <th className="table-header">User</th>
@@ -127,46 +129,54 @@ const RoleManagement = () => {
                 <th className="table-header">Change Role</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-50">
+            <tbody className="divide-y divide-border-subtle">
               {members.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-16 text-center">
-                    <FaShieldAlt className="mx-auto text-3xl text-neutral-200 mb-3" />
-                    <p className="text-sm text-neutral-500">No members found.</p>
+                    <FaShieldAlt
+                      className="mx-auto text-3xl text-content-disabled mb-3"
+                      aria-hidden="true"
+                    />
+                    <p className="text-sm text-content-muted">No members found.</p>
                   </td>
                 </tr>
               ) : (
-                members.map((member) => {
+                members.map(member => {
                   const isCurrentUser = member.id === currentUserId;
                   return (
-                    <tr key={member.id} className="hover:bg-neutral-50/50 transition-colors">
-                      <td className="table-cell font-medium text-neutral-900">
+                    <tr key={member.id} className="hover:bg-surface-muted/60 transition-colors">
+                      <td className="table-cell font-medium text-content-primary">
                         {member.displayName || 'User'}
                         {isCurrentUser && (
-                          <span className="ml-2 text-xs text-neutral-400 font-normal">(you)</span>
+                          <span className="ml-2 text-xs text-content-muted font-normal">(you)</span>
                         )}
                       </td>
-                      <td className="table-cell text-neutral-600">{member.email}</td>
+                      <td className="table-cell text-content-secondary">{member.email}</td>
                       <td className="table-cell">
                         <span className={getRoleBadge(member.role)}>{member.role}</span>
                       </td>
                       <td className="table-cell">
-                        <select
-                          value={member.role}
-                          onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                          disabled={updating === member.id || isCurrentUser}
-                          className="w-auto text-sm"
-                          aria-label={`Change role for ${member.displayName || member.email}`}
-                        >
-                          {ROLES.map((r) => (
-                            <option key={r} value={r}>
-                              {r}
-                            </option>
-                          ))}
-                        </select>
-                        {updating === member.id && (
-                          <FaSpinner className="animate-spin inline-block ml-2 text-neutral-400 text-xs" />
-                        )}
+                        <div className="flex items-center">
+                          <select
+                            value={member.role}
+                            onChange={e => handleRoleChange(member.id, e.target.value)}
+                            disabled={updating === member.id || isCurrentUser}
+                            className="w-auto text-sm bg-surface border border-border-strong rounded-lg px-3 py-1.5 text-content-primary focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-200"
+                            aria-label={`Change role for ${member.displayName || member.email}`}
+                          >
+                            {ROLES.map(r => (
+                              <option key={r} value={r}>
+                                {r}
+                              </option>
+                            ))}
+                          </select>
+                          {updating === member.id && (
+                            <FaSpinner
+                              className="animate-spin inline-block ml-2 text-content-muted text-xs"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

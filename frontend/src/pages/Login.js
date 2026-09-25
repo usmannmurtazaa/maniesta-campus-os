@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +14,25 @@ const Login = () => {
 
   const clearError = () => setError('');
 
-  const handleEmailLogin = async (e) => {
+  const handleEmailChange = e => {
+    setEmail(e.target.value);
+    clearError();
+  };
+
+  const handlePasswordChange = e => {
+    setPassword(e.target.value);
+    clearError();
+  };
+
+  const redirectAfterLogin = user => {
+    if (!user || !user.orgId) {
+      navigate('/org-setup', { replace: true });
+    } else {
+      navigate(`/${user.orgId}/dashboard`, { replace: true });
+    }
+  };
+
+  const handleEmailLogin = async e => {
     e.preventDefault();
     clearError();
 
@@ -59,14 +77,6 @@ const Login = () => {
     }
   };
 
-  const redirectAfterLogin = (user) => {
-    if (!user || !user.orgId) {
-      navigate('/org-setup', { replace: true });
-    } else {
-      navigate(`/${user.orgId}/dashboard`, { replace: true });
-    }
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 px-4">
       <motion.div
@@ -75,21 +85,19 @@ const Login = () => {
         transition={{ duration: 0.4, ease: 'easeOut' }}
         className="w-full max-w-md"
       >
-        <div className="bg-white rounded-2xl shadow-2xl border border-neutral-100 p-6 sm:p-8">
+        <div className="bg-surface rounded-2xl shadow-2xl ring-1 ring-border p-6 sm:p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-content-primary tracking-tight">
               Maniesta Campus OS
             </h1>
-            <p className="text-neutral-500 mt-2 text-sm">
-              Sign in to your campus portal
-            </p>
+            <p className="text-content-muted mt-2 text-sm">Sign in to your campus portal</p>
           </div>
 
           {/* Error alert */}
           {error && (
             <div
-              className="mb-5 bg-danger-50 border border-danger-200 text-danger-700 px-4 py-3 rounded-lg text-sm"
+              className="mb-5 bg-danger-50/70 border border-danger-500/30 text-danger-700 px-4 py-3 rounded-lg text-sm"
               role="alert"
             >
               {error}
@@ -99,23 +107,23 @@ const Login = () => {
           {/* Email / Password form */}
           <form onSubmit={handleEmailLogin} noValidate>
             <div className="mb-4">
-              <label htmlFor="login-email" className="block text-sm font-medium text-neutral-700 mb-1.5">
+              <label
+                htmlFor="login-email"
+                className="block text-sm font-medium text-content-primary mb-1.5"
+              >
                 Email
               </label>
               <div className="relative">
                 <FaEnvelope
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted"
                   aria-hidden="true"
                 />
                 <input
                   id="login-email"
                   type="email"
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    clearError();
-                  }}
-                  className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                  onChange={handleEmailChange}
+                  className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border-strong rounded-lg text-sm text-content-primary placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
                   placeholder="you@example.com"
                   required
                   aria-required="true"
@@ -125,23 +133,23 @@ const Login = () => {
             </div>
 
             <div className="mb-6">
-              <label htmlFor="login-password" className="block text-sm font-medium text-neutral-700 mb-1.5">
+              <label
+                htmlFor="login-password"
+                className="block text-sm font-medium text-content-primary mb-1.5"
+              >
                 Password
               </label>
               <div className="relative">
                 <FaLock
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-content-muted"
                   aria-hidden="true"
                 />
                 <input
                   id="login-password"
                   type="password"
                   value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    clearError();
-                  }}
-                  className="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                  onChange={handlePasswordChange}
+                  className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border-strong rounded-lg text-sm text-content-primary placeholder:text-content-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200"
                   placeholder="••••••••"
                   required
                   aria-required="true"
@@ -166,7 +174,7 @@ const Login = () => {
               onClick={() =>
                 alert('Password reset is not yet available. Contact your administrator.')
               }
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 transition-colors duration-200"
             >
               Forgot password?
             </button>
@@ -175,31 +183,31 @@ const Login = () => {
           {/* Divider */}
           <div className="relative mb-5">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-neutral-200" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-neutral-400 text-xs font-medium">OR</span>
+              <span className="px-3 bg-surface text-content-muted text-xs font-medium">OR</span>
             </div>
           </div>
 
-          {/* Google sign‑in */}
+          {/* Google sign-in */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading || typeof loginWithGoogle !== 'function'}
-            className="w-full flex items-center justify-center gap-2.5 bg-white border border-neutral-300 text-neutral-700 py-2.5 rounded-lg text-sm font-medium hover:bg-neutral-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2.5 bg-surface border border-border-strong text-content-primary py-2.5 rounded-lg text-sm font-medium hover:bg-surface-muted transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             title={
               typeof loginWithGoogle !== 'function'
                 ? 'Google sign-in is not yet configured'
                 : 'Sign in with Google'
             }
           >
-            <FaGoogle className="text-red-500 text-lg" />
+            <FaGoogle className="text-red-500 text-lg" aria-hidden="true" />
             <span>Continue with Google</span>
           </button>
 
           {/* Help text */}
-          <p className="mt-6 text-center text-xs text-neutral-400">
+          <p className="mt-6 text-center text-xs text-content-muted">
             Contact your institute administrator if you need an account.
           </p>
         </div>

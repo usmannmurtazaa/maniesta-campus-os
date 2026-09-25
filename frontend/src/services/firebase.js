@@ -1,9 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import {
-  getFirestore,
-  connectFirestoreEmulator,
-} from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
@@ -18,7 +15,7 @@ const firebaseConfig = {
 // Validate keys
 const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
 const missing = requiredKeys.filter(
-  (key) => !firebaseConfig[key] || String(firebaseConfig[key]).trim() === ''
+  key => !firebaseConfig[key] || String(firebaseConfig[key]).trim() === ''
 );
 if (missing.length > 0) {
   throw new Error(

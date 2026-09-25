@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,7 +8,7 @@ export function RequireAuth({ children }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div
-          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"
+          className="animate-spin rounded-full h-12 w-12 border-2 border-border border-t-primary-600"
           role="status"
         >
           <span className="sr-only">Loading...</span>

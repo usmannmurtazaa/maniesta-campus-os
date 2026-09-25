@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -6,17 +6,29 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 
 // ------------------------------------------------------------------
-// 1. Simple media‑query hook
+// 1. Simple media-query hook
 // ------------------------------------------------------------------
 function useMediaQuery(query) {
-  const [matches, setMatches] = useState(false);
+  // Initial value is resolved synchronously so the first paint is
+  // already correct (avoids a flash of "not mobile" on phone load).
+  const [matches, setMatches] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia(query).matches;
+  });
 
   useEffect(() => {
     const mql = window.matchMedia(query);
-    const handler = (e) => setMatches(e.matches);
-    mql.addEventListener('change', handler);
+    const handler = e => setMatches(e.matches);
     setMatches(mql.matches);
-    return () => mql.removeEventListener('change', handler);
+
+    // Safari < 14 does not support addEventListener on MediaQueryList.
+    // Fall back to the legacy addListener API for compatibility.
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', handler);
+      return () => mql.removeEventListener('change', handler);
+    }
+    mql.addListener(handler);
+    return () => mql.removeListener(handler);
   }, [query]);
 
   return matches;
@@ -43,9 +55,9 @@ const Layout = () => {
   // Safety: guards haven't run yet
   if (!user || !user.orgId) {
     return (
-      <div className="flex h-screen items-center justify-center bg-neutral-50">
+      <div className="flex h-screen items-center justify-center bg-surface-subtle">
         <div
-          className="animate-spin rounded-full h-10 w-10 border-2 border-neutral-200 border-t-primary-600"
+          className="animate-spin rounded-full h-10 w-10 border-2 border-border border-t-primary-600"
           role="status"
         >
           <span className="sr-only">Loading...</span>
@@ -55,12 +67,12 @@ const Layout = () => {
   }
 
   return (
-    <div className="flex h-screen bg-neutral-50 overflow-hidden">
+    <div className="flex h-screen bg-surface-subtle overflow-hidden">
       {/* Mobile overlay */}
       <AnimatePresence>
         {isMobile && sidebarOpen && (
           <motion.div
-            className="fixed inset-0 z-40 bg-neutral-900/30 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-neutral-900/40 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -81,16 +93,9 @@ const Layout = () => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Header
-          orgId={user.orgId}
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
+        <Header orgId={user.orgId} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
-        <main
-          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8"
-          aria-label="Main content"
-        >
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8" aria-label="Main content">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

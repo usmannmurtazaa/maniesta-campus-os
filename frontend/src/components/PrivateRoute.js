@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -13,7 +12,7 @@ export function RequireAuth({ children }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div
-          className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"
+          className="animate-spin rounded-full h-12 w-12 border-2 border-border border-t-primary-600"
           role="status"
         >
           <span className="sr-only">Loading...</span>
@@ -31,7 +30,7 @@ export function RequireAuth({ children }) {
 
 // ---------------------------------------------------------------------------
 // RequireOrg – ensures the authenticated user has an organisation (orgId).
-// If the user hasn’t joined an organisation, they are redirected to
+// If the user hasn't joined an organisation, they are redirected to
 // the onboarding page where they can create or join one.
 // ---------------------------------------------------------------------------
 export function RequireOrg({ children }) {
@@ -48,7 +47,7 @@ export function RequireOrg({ children }) {
   const urlOrgId = params.orgId;
 
   if (urlOrgId && urlOrgId !== user.orgId) {
-    // User is attempting to access a different org’s route
+    // User is attempting to access a different org's route
     return <Navigate to={`/${user.orgId}/dashboard`} replace />;
   }
 
@@ -59,7 +58,7 @@ export function RequireOrg({ children }) {
 // RequireRole – restricts access to users with specific roles.
 //   allowedRoles : array of role strings (e.g. ['admin','teacher'])
 //   fallbackPath : optional path to redirect if the user lacks permissions
-//                  defaults to the current org’s dashboard or /login if orgId missing.
+//                  defaults to the current org's dashboard or /login if orgId missing.
 // ---------------------------------------------------------------------------
 export function RequireRole({ children, allowedRoles = [], fallbackPath }) {
   const { user } = useAuth();
@@ -70,9 +69,7 @@ export function RequireRole({ children, allowedRoles = [], fallbackPath }) {
   }
 
   if (!allowedRoles.includes(user.role)) {
-    const redirectTo =
-      fallbackPath ||
-      (user.orgId ? `/${user.orgId}/dashboard` : '/login');
+    const redirectTo = fallbackPath || (user.orgId ? `/${user.orgId}/dashboard` : '/login');
     return <Navigate to={redirectTo} replace />;
   }
 
