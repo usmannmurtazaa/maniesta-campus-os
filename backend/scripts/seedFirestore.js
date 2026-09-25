@@ -17,9 +17,7 @@ let serviceAccount;
 try {
   serviceAccount = require(SERVICE_ACCOUNT_PATH);
 } catch (err) {
-  console.error(
-    `Failed to load service account key from "${SERVICE_ACCOUNT_PATH}".`
-  );
+  console.error(`Failed to load service account key from "${SERVICE_ACCOUNT_PATH}".`);
   console.error('Ensure the file exists and the path is correct.');
   process.exit(1);
 }
@@ -66,9 +64,7 @@ async function seed() {
 
   // 2. Admin user profile
   if (!ADMIN_UID) {
-    console.log(
-      '⚠ ADMIN_UID not set. Skipping admin user creation.'
-    );
+    console.log('⚠ ADMIN_UID not set. Skipping admin user creation.');
     console.log(
       '  Create a Firebase Auth user for admin, then update the users document with the real UID.'
     );
@@ -278,7 +274,7 @@ async function seed() {
   }
 }
 
-seed().catch((err) => {
+seed().catch(err => {
   console.error('\n❌ Seeding failed:', err);
   process.exit(1);
 });
