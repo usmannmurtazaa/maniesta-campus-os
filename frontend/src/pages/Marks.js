@@ -237,14 +237,6 @@ const Marks = () => {
   });
   const [formErrors, setFormErrors] = useState({});
 
-  const studentMap = useMemo(() => {
-    const map = {};
-    students.forEach(s => {
-      map[s.id] = s.name;
-    });
-    return map;
-  }, [students]);
-
   const resetForm = () => {
     setFormData({
       studentId: '',
