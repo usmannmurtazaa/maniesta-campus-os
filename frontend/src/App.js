@@ -4,6 +4,16 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { OrgProvider } from './context/OrgContext';
 
+// Guards
+import { RequireAuth } from './components/RequireAuth';
+import { RequireOrg } from './components/RequireOrg';
+import { RequireRole } from './components/RequireRole';
+
+// Layouts
+import OrgLayout from './layouts/OrgLayout';
+import Footer from './components/Footer';
+import ErrorBoundary from './components/ErrorBoundary';
+
 // Lazy-loaded pages
 const Login = lazy(() => import('./pages/Login'));
 const OrgSetup = lazy(() => import('./pages/OrgSetup'));
@@ -19,16 +29,6 @@ const Marks = lazy(() => import('./pages/Marks'));
 const AdminSettings = lazy(() => import('./pages/AdminSettings'));
 const RoleManagement = lazy(() => import('./pages/RoleManagement'));
 const AuditLogs = lazy(() => import('./pages/AuditLogs'));
-
-// Guards
-import { RequireAuth } from './components/RequireAuth';
-import { RequireOrg } from './components/RequireOrg';
-import { RequireRole } from './components/RequireRole';
-
-// Layouts
-import OrgLayout from './layouts/OrgLayout';
-import Footer from './components/Footer';
-import ErrorBoundary from './components/ErrorBoundary';
 
 // ------------------------------------------------------------------
 // 1. ScrollToTop – resets scroll position on every navigation
@@ -76,7 +76,8 @@ const toastOptions = {
     fontWeight: '500',
     borderRadius: '0.75rem',
     border: '1px solid #e4e7ee',
-    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)',
+    boxShadow:
+      '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)',
   },
   success: {
     iconTheme: {
