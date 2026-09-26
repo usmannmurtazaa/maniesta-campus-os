@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Maniesta Campus OS public pages.
+       Authenticated routes (/dashboard, /students, /marks, etc.) are
+       intentionally excluded — they require login and are not
+       indexable by search engines.
+
+       Update <lastmod> whenever the page content changes materially. -->
+  <url>
+    <loc>https://maniestacampus.netlify.app/</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://maniestacampus.netlify.app/about</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://maniestacampus.netlify.app/contact</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>

@@ -1,0 +1,17 @@
+# robots.txt for Maniesta Campus OS
+# https://maniestacampus.netlify.app
+
+# Allow all well-behaved crawlers to index the public marketing pages.
+User-agent: *
+Allow: /
+
+# Explicit allow directives for Google (defensive — the wildcard above
+# already permits these, but some CDNs misconfigure the defaults).
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+# Sitemap reference — helps search engines discover every public URL.
+Sitemap: https://maniestacampus.netlify.app/sitemap.xml
