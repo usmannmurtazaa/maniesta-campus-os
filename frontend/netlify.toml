@@ -2,6 +2,18 @@
   command = "npm run build"
   publish = "build"
 
+# Netlify Secrets Scanning – allowlist of keys whose values are intentionally
+# public and appear in the codebase. Without this, Netlify marks the build
+# as failed even though the build itself succeeded.
+#
+#   ADMIN_EMAIL            → public contact email (footer, contact, privacy, terms)
+#   FIREBASE_PROJECT_ID    → public Firebase project identifier (in firebase config)
+#   ADMIN_UID              → Firebase Auth UID of the admin (used only in seed, not runtime)
+#   FIREBASE_CLIENT_EMAIL  → Firebase Admin SDK service account email (public)
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "ADMIN_EMAIL,FIREBASE_PROJECT_ID,ADMIN_UID,FIREBASE_CLIENT_EMAIL"
+  SECRETS_SCAN_OMIT_PATHS = "README.md,package-lock.json,package.json"
+
 # Single Page Application (SPA) rewrites – all routes go to index.html
 [[redirects]]
   from = "/*"
